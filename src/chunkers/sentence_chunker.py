@@ -15,13 +15,14 @@ class SentenceChunker(BaseChunker):
             for sentence in sentences:
                 sentence = sentence.strip()
                 if sentence:
-                    page.chunks.append(
-                        Chunk(
+                    chunk = Chunk(
                             chunk_id = chunk_id,
                             page_number = page.number,
                             text = sentence
                         )
-                    )
+                    page.chunks.append(chunk)
+                    document.chunks.append(chunk)
+                        
                     chunk_id += 1
 
         return document
