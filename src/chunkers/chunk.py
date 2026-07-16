@@ -7,7 +7,7 @@ class Chunk:
         self.embedding = None
 
     def __str__(self):
-        return f"Chunk {self.chunk_id} (Page {self.page_number})"
+        return f"Chunk {self.chunk_id} (Page {self.page_number}) {self.text}"
     
     def __repr__(self):
         return self.__str__()
