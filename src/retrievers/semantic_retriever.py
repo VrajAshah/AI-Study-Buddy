@@ -12,7 +12,6 @@ class SemanticRetriever:
 
         question_embedding = self.embedding_generator.generate_embedding(question)
 
-        page_number = 0
         best_chunk_list = []
 
         for chunk in document.chunks:

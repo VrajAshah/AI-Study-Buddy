@@ -8,15 +8,16 @@ say:
 "I couldn't find the answer in the uploaded document."
 
 -------------------------
-Context
+Context:
 
 {context}
 
 -------------------------
 
-Question
+Question:
 
 {question}
 
-Answer:
+Provide a concise answer using the above context only.
+
 """
