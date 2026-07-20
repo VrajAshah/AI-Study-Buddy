@@ -6,6 +6,7 @@ from src.chunkers.sentence_chunker import SentenceChunker
 from src.classifiers.document_classifier import DocumentClassifier
 from src.embeddings.embedding_generator import EmbeddingGenerator
 from src.retrievers.semantic_retriever import SemanticRetriever
+from src.prompt.prompt_builder import PromptBuilder
 
 reader = PDFReader("01_article_text.pdf")
 pages = reader.get_pages()
@@ -37,8 +38,12 @@ question = "What deep learning uses?"
 # print("question_embedding ---------->>>", len(question_embedding))
 
 retrieval = SemanticRetriever(generator)
-retrieve_best_chunk = retrieval.retrieve(document,question)
-print("retrieve_best_chunk ---------->>>", retrieve_best_chunk)
+retrieve_result_list = retrieval.retrieve(document,question)
+print("retrieve_best_chunk ---------->>>", retrieve_result_list)
+
+prompt_builder = PromptBuilder()
+prompt = prompt_builder.build(question,retrieve_result_list)
+print("prompt ---------->>>", prompt)
 
 print("\n--- Document processing complete. Ask your questions! (Type 'quit' or 'exit' to stop) ---")
 

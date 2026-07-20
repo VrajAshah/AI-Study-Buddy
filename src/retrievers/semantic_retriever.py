@@ -1,4 +1,6 @@
 import math
+from src.models.retrieval_result import RetrievalResult
+from src.config.document_rules import PROMPT_CHUNK_SIZE
 
 class SemanticRetriever:
 
@@ -9,15 +11,17 @@ class SemanticRetriever:
     def retrieve(self,document,question):
 
         question_embedding = self.embedding_generator.generate_embedding(question)
-        best_chunk = None
-        best_score = -1
+
+        page_number = 0
+        best_chunk_list = []
 
         for chunk in document.chunks:
             score = self._cosine_similarity(chunk.embedding,question_embedding)
-            if score > best_score:
-                best_score = score
-                best_chunk = chunk
-        return best_chunk
+
+            best_chunk_list.append(RetrievalResult(chunk,score))
+            best_chunk_list = self._prepare_best_chunk_list(best_chunk_list)
+        
+        return best_chunk_list
 
     def _dot_product(self, vector1, vector2):
 
@@ -39,3 +43,10 @@ class SemanticRetriever:
             return 0
         
         return dot_product / (len_vector1 * len_vector2)
+    
+    def _prepare_best_chunk_list(self, best_chunk_list):
+        if len(best_chunk_list) > PROMPT_CHUNK_SIZE:
+            best_chunk_list.sort(reverse= True,key=lambda x: x.score)
+            best_chunk_list.pop()
+
+        return best_chunk_list

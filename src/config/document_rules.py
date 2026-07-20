@@ -46,3 +46,5 @@ DOCUMENT_RULES = {
     }
 
 }
+
+PROMPT_CHUNK_SIZE = 3
