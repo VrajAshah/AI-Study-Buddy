@@ -1,191 +1,179 @@
-# AI Study Buddy
+# 🧠 AI Study Buddy
 
-An educational project built from scratch to understand how Retrieval-Augmented Generation (RAG) systems work internally.
+A modular **Retrieval-Augmented Generation (RAG) Framework** built completely from scratch in Python to understand the internal architecture of modern Generative AI systems.
 
-Unlike frameworks that hide the implementation details, this project builds every major component manually to understand the complete document retrieval pipeline.
+Instead of relying on frameworks like LangChain, this project implements every major RAG component independently, making it easy to understand, customize, and extend.
 
 ---
 
-# Project Goal
+## ✨ Features
 
-The goal of this project is to learn AI Engineering by implementing each stage of a RAG system from scratch instead of relying on frameworks like LangChain.
+- 📄 PDF Document Processing
+- 🧹 Text Cleaning Pipeline
+- ✂️ Intelligent Text Chunking
+- 🔢 SentenceTransformer Embeddings
+- 📚 In-Memory Document Store
+- 🔍 Semantic Search
+- 🎯 Maximum Marginal Relevance (MMR) Retrieval
+- 🚀 CrossEncoder Re-ranking
+- 💬 Conversation Memory
+- 🧠 Memory Manager Abstraction
+- 📑 Multi-Document Retrieval
+- 🤖 Ollama LLM Integration
+- 🏗️ Modular & Extensible Architecture
+- 🔌 Dependency Injection
+- 🧩 Plug-and-Play Components
 
-Current pipeline:
+---
+
+# System Architecture
 
 ```
-PDF
- │
- ▼
-PDF Reader
- │
- ▼
-Document Analyzer
- │
- ▼
-Text Cleaner
- │
- ▼
-Sentence Chunker
- │
- ▼
-Embedding Generator
- │
- ▼
-Semantic Retriever
- │
- ▼
-Prompt Builder
+                   PDF Documents
+                         │
+                         ▼
+                 ┌──────────────┐
+                 │    Reader    │
+                 └──────────────┘
+                         │
+                         ▼
+                 ┌──────────────┐
+                 │   Analyzer   │
+                 └──────────────┘
+                         │
+                         ▼
+                 ┌──────────────┐
+                 │   Cleaner    │
+                 └──────────────┘
+                         │
+                         ▼
+                 ┌──────────────┐
+                 │   Chunker    │
+                 └──────────────┘
+                         │
+                         ▼
+             ┌─────────────────────┐
+             │ Embedding Generator │
+             └─────────────────────┘
+                         │
+                         ▼
+               ┌────────────────┐
+               │ Document Store │
+               └────────────────┘
+                         │
+             ┌───────────┴───────────┐
+             ▼                       ▼
+      Semantic Retriever      MMR Retriever
+             │                       │
+             └───────────┬───────────┘
+                         ▼
+               ┌────────────────┐
+               │ CrossEncoder   │
+               │   Reranker     │
+               └────────────────┘
+                         │
+                         ▼
+               ┌────────────────┐
+               │ Memory Manager │
+               └────────────────┘
+                         │
+                         ▼
+               ┌────────────────┐
+               │ Prompt Builder │
+               └────────────────┘
+                         │
+                         ▼
+                 ┌──────────────┐
+                 │  Ollama LLM  │
+                 └──────────────┘
+                         │
+                         ▼
+                    Final Answer
 ```
-
-The next milestone is integrating an LLM to generate natural language answers from the retrieved context.
-
----
-
-# Features Implemented
-
-## PDF Reader
-
-- Reads PDF documents
-- Extracts pages
-- Supports multi-page documents
-
----
-
-## Document Analyzer
-
-Classifies each page as:
-
-- Text Page
-- Image Page
-- Mixed Page
-- Blank Page
-
-Stores page metadata for later processing.
-
----
-
-## Text Cleaner
-
-Preprocesses extracted text by:
-
-- Removing unnecessary whitespace
-- Normalizing text
-- Preparing clean text for chunking
-
----
-
-## Sentence Chunker
-
-Splits document text into semantic chunks.
-
-Each chunk stores:
-
-- Chunk text
-- Page number
-- Embedding vector (generated later)
-
----
-
-## Rule-Based Document Classifier
-
-Automatically identifies document types using feature extraction and weighted keyword scoring.
-
-Current supported document types:
-
-- Invoice
-- Resume
-- Research Paper
-- Bank Statement
-- Unknown
-
----
-
-## Feature Extraction
-
-Extracts document-level features such as:
-
-- Word count
-- Page count
-- Keyword frequencies
-- Structural indicators
-
-These features are used by the classifier.
-
----
-
-## Embedding Generator
-
-Uses Sentence Transformers to generate semantic embeddings.
-
-Current embedding model:
-
-```
-all-MiniLM-L6-v2
-```
-
-Embeddings are generated for:
-
-- Document chunks
-- User questions
-
----
-
-## Semantic Retriever
-
-Implements semantic search manually without external vector databases.
-
-Includes:
-
-- Custom cosine similarity
-- Dot product implementation
-- Vector length calculation
-- Top-K retrieval
-
-Returns the most relevant chunks based on semantic similarity.
-
----
-
-## Retrieval Result Model
-
-Each retrieval result stores:
-
-- Retrieved chunk
-- Similarity score
-
-This abstraction keeps the retrieval layer extensible for future metadata.
-
----
-
-## Prompt Builder
-
-Creates structured prompts for LLMs.
-
-The prompt includes:
-
-- System instructions
-- Retrieved context
-- User question
-
-This separates prompt generation from retrieval logic.
 
 ---
 
 # Project Structure
 
 ```
-src/
+AI-Study-Buddy/
 │
-├── analyzers/
-├── chunkers/
-├── classifiers/
-├── cleaners/
-├── config/
-├── embeddings/
-├── models/
-├── prompt/
-├── prompts/
-├── readers/
-├── retrievers/
+├── documents/
+│
+├── src/
+│   │
+│   ├── analyzers/
+│   ├── chunkers/
+│   ├── cleaners/
+│   ├── config/
+│   ├── document/
+│   ├── embeddings/
+│   ├── indexing/
+│   ├── llm/
+│   ├── memory/
+│   ├── memory_managers/
+│   ├── prompt/
+│   ├── readers/
+│   ├── rerankers/
+│   ├── retrievers/
+│   ├── store/
+│   └── pipeline/
+│
+├── main.py
+├── requirements.txt
+└── README.md
+```
+
+---
+
+# Current Components
+
+| Component | Status |
+|-----------|--------|
+| PDF Reader | ✅ |
+| Document Analyzer | ✅ |
+| Text Cleaner | ✅ |
+| Text Chunker | ✅ |
+| Embedding Generator | ✅ |
+| In-Memory Store | ✅ |
+| Semantic Retriever | ✅ |
+| MMR Retriever | ✅ |
+| CrossEncoder Reranker | ✅ |
+| Conversation Memory | ✅ |
+| Memory Manager | ✅ |
+| Prompt Builder | ✅ |
+| Ollama LLM | ✅ |
+
+---
+
+# Retrieval Pipeline
+
+```
+Question
+    │
+    ▼
+Conversation Memory
+    │
+    ▼
+Retriever
+    │
+    ▼
+Top 20 Chunks
+    │
+    ▼
+CrossEncoder Reranker
+    │
+    ▼
+Top 3 Chunks
+    │
+    ▼
+Prompt Builder
+    │
+    ▼
+LLM
+    │
+    ▼
+Answer
 ```
 
 ---
@@ -193,117 +181,230 @@ src/
 # Technologies Used
 
 - Python
-- PyMuPDF (fitz)
+- Ollama
+- Gemma 3
 - Sentence Transformers
+- HuggingFace
+- CrossEncoder
 - NumPy
+- PyPDF
+- Scikit-Learn
 
 ---
 
-# Current Workflow
+# Design Principles
 
-```
-PDF
- │
- ▼
-Read Pages
- │
- ▼
-Analyze Pages
- │
- ▼
-Clean Text
- │
- ▼
-Chunk Document
- │
- ▼
-Generate Embeddings
- │
- ▼
-Semantic Retrieval
- │
- ▼
-Prompt Generation
-```
+This project follows modern software engineering principles:
+
+- SOLID Principles
+- Object-Oriented Programming
+- Dependency Injection
+- Abstraction
+- Modular Design
+- Separation of Concerns
+- Interface-Based Architecture
 
 ---
 
-# Future Roadmap
+# Why Build Everything From Scratch?
 
-## Phase 1 (Completed)
+The goal of this project is not only to build a chatbot but to understand how modern RAG systems work internally.
 
-- [x] PDF Reader
-- [x] Document Analyzer
-- [x] Text Cleaner
-- [x] Sentence Chunker
-- [x] Feature Extraction
-- [x] Rule-Based Document Classification
-- [x] Embedding Generator
-- [x] Semantic Retrieval
-- [x] Prompt Builder
+Instead of depending on high-level frameworks, every major component is implemented independently to gain a deeper understanding of:
 
----
-
-## Phase 2
-
-- [ ] LLM Integration
-- [ ] Response Generation
-- [ ] Prompt Templates
-- [ ] Source Attribution
-
----
-
-## Phase 3
-
-- [ ] FAISS Integration
-- [ ] ChromaDB Support
-- [ ] Hybrid Search
-- [ ] Metadata Filtering
-- [ ] Multi-document Retrieval
-
----
-
-## Phase 4
-
-- [ ] Chat Memory
-- [ ] Multiple PDF Knowledge Base
-- [ ] Web Interface
-- [ ] Streaming Responses
-
----
-
-# Learning Objectives
-
-This project focuses on understanding:
-
-- Document Processing
-- Feature Engineering
-- Text Preprocessing
-- Semantic Embeddings
-- Vector Similarity Search
 - Retrieval-Augmented Generation (RAG)
+- Vector Embeddings
+- Semantic Search
+- Maximum Marginal Relevance (MMR)
+- CrossEncoder Re-ranking
+- Conversation Memory
 - Prompt Engineering
-- AI System Design
-- Software Architecture for AI Applications
+- LLM Integration
+- Clean Software Architecture
+
+This makes the framework highly extensible and suitable for experimentation with different retrieval algorithms, memory strategies, rerankers, and language models.
 
 ---
 
-# Why Build This Instead of Using LangChain?
+# Current Retrieval Strategies
 
-The purpose of this project is educational.
+### Semantic Retrieval
 
-Rather than treating RAG as a black box, every component is implemented manually to understand:
+Ranks document chunks using cosine similarity between query embeddings and document embeddings.
 
-- How PDFs are processed
-- How embeddings work
-- How cosine similarity retrieves relevant information
-- How prompts are constructed
-- How each component interacts within a RAG pipeline
+---
 
-Once these fundamentals are understood, frameworks such as LangChain or LlamaIndex become tools for productivity rather than dependencies.
+### Maximum Marginal Relevance (MMR)
+
+Balances:
+
+- Relevance
+- Diversity
+
+to reduce redundant retrieval results.
+
+---
+
+### CrossEncoder Re-ranking
+
+After retrieval, a CrossEncoder model scores the retrieved chunks together with the query to improve ranking accuracy before sending the final context to the LLM.
+
+---
+
+# Memory
+
+The framework currently supports:
+
+### Conversation Memory
+
+Stores user and assistant messages.
+
+### Recent Memory Manager
+
+Retrieves the latest conversation history and injects it into the prompt.
+
+Future memory implementations can be added without modifying the pipeline.
+
+Examples:
+
+- Summary Memory
+- Semantic Memory
+- Long-Term Memory
+
+---
+
+# Multi-Document Support
+
+The document store supports multiple indexed documents.
+
+Each chunk maintains metadata including:
+
+- Document Name
+- Page Number
+- Chunk ID
+
+allowing retrieval across multiple PDFs while preserving source information.
+
+---
+
+# Extensibility
+
+Adding a new retriever only requires implementing:
+
+```python
+class BaseRetriever:
+    retrieve(...)
+```
+
+Adding a new LLM only requires implementing:
+
+```python
+class BaseLLM:
+    generate(...)
+```
+
+Adding a new memory strategy only requires implementing:
+
+```python
+class BaseMemoryManager:
+    get_context(...)
+```
+
+The pipeline remains unchanged.
+
+---
+
+# Roadmap
+
+## ✅ Completed
+
+- PDF Processing
+- Chunking
+- Embeddings
+- Semantic Retrieval
+- MMR Retrieval
+- CrossEncoder Re-ranking
+- Conversation Memory
+- Memory Manager
+- Multi-Document Support
+
+---
+
+## 🚧 Coming Soon
+
+- Function Calling
+- Tool Registry
+- Structured Output
+- AI Agents
+- Reflection
+- ReAct
+- MCP (Model Context Protocol)
+- LangGraph-style Workflows
+- FastAPI API
+- Docker Support
+- Evaluation Framework
+- FAISS Vector Store
+- Hybrid Search
+
+---
+
+# Installation
+
+```bash
+git clone https://github.com/<your-username>/AI-Study-Buddy.git
+
+cd AI-Study-Buddy
+
+pip install -r requirements.txt
+```
+
+---
+
+# Run
+
+Start Ollama:
+
+```bash
+ollama serve
+```
+
+Download the model:
+
+```bash
+ollama pull gemma3:1b
+```
+
+Run the application:
+
+```bash
+python main.py
+```
+
+---
+
+# Future Vision
+
+The long-term goal is to evolve this project into a complete **Generative AI Framework** supporting:
+
+- RAG
+- Agents
+- Tool Calling
+- MCP
+- Multi-Agent Systems
+- Production Deployment
+
+while keeping every component modular and easy to understand.
 
 ---
 
 # Author
 
-Built as a learning project to understand AI Engineering from first principles.
+**VRAJ SHAH**
+
+Computer Science Student | Generative AI Enthusiast
+
+Building modern AI systems from first principles.
+
+---
+
+⭐ If you found this project useful, consider giving it a star!
