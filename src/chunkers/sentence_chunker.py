@@ -18,7 +18,8 @@ class SentenceChunker(BaseChunker):
                     chunk = Chunk(
                             chunk_id = chunk_id,
                             page_number = page.number,
-                            text = sentence
+                            text = sentence,
+                            document_name = document.name
                         )
                     page.chunks.append(chunk)
                     document.chunks.append(chunk)

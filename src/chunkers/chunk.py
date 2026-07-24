@@ -1,9 +1,10 @@
 class Chunk:
 
-    def __init__(self,chunk_id,page_number,text):
+    def __init__(self,chunk_id,page_number,text, document_name):
         self.chunk_id = chunk_id
         self.page_number = page_number
         self.text = text
+        self.document_name = document_name
         self.embedding = None
 
     def __str__(self):

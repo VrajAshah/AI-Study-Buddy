@@ -8,6 +8,11 @@ say:
 "I couldn't find the answer in the uploaded document."
 
 -------------------------
+Conversation History:
+
+{history}
+
+-------------------------
 Context:
 
 {context}

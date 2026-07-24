@@ -6,38 +6,64 @@ from src.chunkers.sentence_chunker import SentenceChunker
 from src.classifiers.document_classifier import DocumentClassifier
 from src.embeddings.embedding_generator import EmbeddingGenerator
 from src.retrievers.semantic_retriever import SemanticRetriever
+from src.retrievers.mmr_retriever import MMRRetriever
 from src.prompt.prompt_builder import PromptBuilder
 from src.llm.ollama_llm import Ollama
 from src.indexing.document_indexing import DocumentIndexer
 from src.pipeline.rag_pipeline import RAGPipeline
+from src.rerankers.NoOpReranker import NoOpReranker
+from src.memory.conversation_memory import ConversationMemory
+from src.memory_managers.recent_memory_manager import RecentMemoryManager
 
-reader = PDFReader("01_article_text.pdf")
+document_name = "01_article_text.pdf"
+reader = PDFReader(document_name)
 pages = reader.get_pages()
 
 analyzer  = DocumentAnalyzer(pages)
 analyzed_pages = analyzer.analyze()
 
-document = Document(analyzed_pages)
+document = Document(analyzed_pages,document_name)
 
 generator = EmbeddingGenerator()
+reranker = NoOpReranker()
 
 indexer = DocumentIndexer(embedding_generator= generator,cleaner= TextCleaner(),chunker= SentenceChunker())
 index_document = indexer.index(document)
 
-pipeline = RAGPipeline(
+semantic_pipeline = RAGPipeline(
     indexer=indexer,
     retriever=SemanticRetriever(generator),
+    reranker=reranker,
     prompt_builder=PromptBuilder(),
-    llm=Ollama("gemma3:1b")
+    llm=Ollama("gemma3:1b"),
+    memory=ConversationMemory(),
+    memory_manager=RecentMemoryManager()
 )
 
-pipeline.load_document(document)
+mmr_pipeline = RAGPipeline(
+    indexer=indexer,
+    retriever=MMRRetriever(generator),
+    reranker=reranker,
+    prompt_builder=PromptBuilder(),
+    llm=Ollama("gemma3:1b"),
+    memory=ConversationMemory(),
+    memory_manager=RecentMemoryManager()
+)
 
-response = pipeline.ask(
+semantic_pipeline.load_document(document)
+
+response = semantic_pipeline.ask(
+    "What deep learning uses?"
+)
+print("semantic_pipeline",response.answer)
+
+mmr_pipeline.load_document(document)
+
+response = mmr_pipeline.ask(
     "What deep learning uses?"
 )
 
-print(response.answer)
+print("mmr_pipeline",response.answer)
 
 print("\n--- Document processing complete. Ask your questions! (Type 'quit' or 'exit' to stop) ---")
 
@@ -58,9 +84,11 @@ while True:
         
     # 4. Retrieve and print the answer
     try:
-        response = pipeline.ask(question)
+        response = semantic_pipeline.ask(question)
+        print("semantic_pipeline: ",response.answer)
+        response = mmr_pipeline.ask(question)
+        print("mmr_pipeline: ",response.answer)
 
-        print(response.answer)
         # retrieve_best_chunk = retrieval.retrieve(document, question)
         # print("\n[Answer] ---------->>>", retrieve_best_chunk)
     except Exception as e:
