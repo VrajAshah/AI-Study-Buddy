@@ -8,20 +8,20 @@ from src.rerankers.NoOpReranker import NoOpReranker
 from src.rerankers.BaseReranker import BaseReranker
 from src.memory.base_memory import BaseMemory
 from src.memory_managers.base_memory_manager import BaseMemoryManager
+from .base_pipeline import BasePipeline
 
-class RAGPipeline:
+class RAGPipeline(BasePipeline):
 
     def __init__(
         self,
-        indexer: DocumentIndexer,
         retriever: BaseRetriever,
         reranker: BaseReranker,
         prompt_builder: PromptBuilder,
         llm: BaseLLM,
         memory: BaseMemory,
-        memory_manager: BaseMemoryManager
+        memory_manager: BaseMemoryManager,
+        store: InMemoryDocumentStore
     ):
-        self.indexer = indexer
         self.retriever = retriever
         self.reranker = reranker
         self.prompt_builder = prompt_builder
@@ -30,15 +30,9 @@ class RAGPipeline:
         self.memory_manager = memory_manager
 
         self.document = None
-        self.store = InMemoryDocumentStore()
+        self.store = store
 
-    def load_document(self, document):
-
-        self.document = self.indexer.index(document)
-
-        self.store.add_document(self.document)
-
-    def ask(self, question):
+    def ask(self, question, tool_name):
 
         history = self.memory_manager.get_context(self.memory, question)
 
@@ -61,20 +55,12 @@ class RAGPipeline:
             retrieval_results,
             history
         )
-        print("prompt ---------->>>", prompt)
-        # prompt = """You are a helpful AI assistant.
 
-        #             Context:
-        #             Deep learning uses neural networks.
+        if retrieval_results:
+            response = self.llm.generate(prompt)
 
-        #             Question:
-        #             What does deep learning use?
-
-        #             Answer in one complete sentence."""
-        # print("prompt ---------->>>", prompt)
-
-        response = self.llm.generate(prompt)
-        print("response ---------->>>", response)
+        else:
+            response = ""
 
         self.memory.add_message("assistant", response)
 

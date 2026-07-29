@@ -19,7 +19,6 @@ class DocumentAnalyzer:
             else:
                 page_type = PageType.IMAGE
 
-            print("text", text)
             page = Page(number=page_number,page_type=page_type,raw_text = text if text else "")
 
             results.append(page)

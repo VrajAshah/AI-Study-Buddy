@@ -35,7 +35,7 @@ class MMRRetriever(BaseRetriever):
         selected_chunks.append(remaining_chunks.pop(0))
 
 
-        while len(selected_chunks) < top_k and remaining_chunks:
+        while len(selected_chunks) <= top_k and remaining_chunks:
             best_candidate = None
             best_mmr_score = float("-inf")
 
