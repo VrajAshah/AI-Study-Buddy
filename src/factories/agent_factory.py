@@ -1,81 +1,90 @@
+from src.agent.intelligent_agent import IntelligentAgent
 from src.agent.state import AgentState
+
 from src.context.context_builder import ContextBuilder
+
+from src.document_manager.document_manager import DocumentManager
+from src.factories.prompt_factory import PromptFactory
 from src.orchestration.rule_based_decision_engine import RuleBasedDecisionEngine
+
 from src.orchestration.workflow import Workflow
 from src.pipeline.chat_pipeline import ChatPipeline
 from src.pipeline.document_processing_pipeline import DocumentProcessingPipeline
-from src.pipeline.tool_pipeline import ToolPipeline
-from src.cleaners.text_cleaner import TextCleaner
-from src.chunkers.sentence_chunker import SentenceChunker
-from src.embeddings.embedding_generator import EmbeddingGenerator
-from src.retrievers.mmr_retriever import MMRRetriever
-from src.prompt.prompt_builder import PromptBuilder
-from src.llm.ollama_llm import Ollama
-from src.llm.gemini_llm import GeminiLLM
-from src.indexing.document_indexing import DocumentIndexer
 from src.pipeline.rag_pipeline import RAGPipeline
-from src.rerankers.NoOpReranker import NoOpReranker
-from src.memory.conversation_memory import ConversationMemory
-from src.memory_managers.recent_memory_manager import RecentMemoryManager
-from src.tools.calculator_tool import CalculatorTool
-from src.tools.registry import ToolRegistry
-from src.tools.executor import ToolExecutor
-from src.tools.parser import ToolParser
-from src.agent.intelligent_agent import IntelligentAgent
-from src.workflows.rag_workflow import RAGWorkFlow
-from src.workflows.chat_workflow import ChatWorkFlow
-from src.workflows.tool_workflow import ToolWorkflow
-from src.orchestration.workflow_registry import WorkFlowRegistry
-from src.store.in_memory_store import InMemoryDocumentStore
+from src.pipeline.tool_pipeline import ToolPipeline
 
-from dotenv import load_dotenv
-import os
+from src.factories.llm_factory import LLMFactory
+from src.factories.memory_factory import MemoryFactory
+from src.factories.processing_factory import ProcessingFactory
+from src.factories.retriever_factory import RetrieverFactory
+from src.factories.store_factory import StoreFactory
+from src.factories.tool_factory import ToolFactory
+from src.factories.workflow_factory import WorkflowFactory
+from src.logging.logging import get_logger
+
+logger = get_logger(__name__)
+
 
 class AgentFactory:
 
     @staticmethod
     def create():
         try:
-            generator = EmbeddingGenerator()
 
-            load_dotenv()
+            # ---------- Processing ----------
+            embedding_generator = ProcessingFactory.create_embedding_generator()
 
-            api_key = os.getenv("GEMINI_API_KEY")
-
-            # llm = Ollama("gemma3:1b")
-            llm = GeminiLLM(api_key=os.getenv("GEMINI_API_KEY"))
-
-            memory = ConversationMemory()
-
-            memory_manager = RecentMemoryManager()
-
-            prompt_builder = PromptBuilder()
-
-            reranker = NoOpReranker()
-
-            indexer = DocumentIndexer(
-                embedding_generator=generator,
-                cleaner=TextCleaner(),
-                chunker=SentenceChunker()
+            indexer = ProcessingFactory.create_indexer(
+                embedding_generator
             )
 
-            retriever = MMRRetriever(generator)
+            # prompt_builder = ProcessingFactory.create_prompt_builder()
+            prompt_builder = PromptFactory.create(Workflow.RAG)
 
-            parser = ToolParser()
+            reranker = ProcessingFactory.create_reranker()
 
-            registry = ToolRegistry()
+            # ---------- LLM ----------
+            llm = LLMFactory.create()
 
-            registry.register(CalculatorTool())
+            # ---------- Retrieval ----------
+            retriever = RetrieverFactory.create(
+                embedding_generator
+            )
 
-            executor = ToolExecutor(registry)
+            # ---------- Memory ----------
+            memory = MemoryFactory.create_memory()
 
-            store = InMemoryDocumentStore()
+            memory_manager = MemoryFactory.create_manager()
 
+            # ---------- Store ----------
+            store = StoreFactory.create()
+
+            # ---------- Tools ----------
+            registry = ToolFactory.create_registry()
+
+            executor = ToolFactory.create_executor(
+                registry
+            )
+
+            # ---------- Agent State ----------
             state = AgentState()
 
-            state.available_tools = [ tool.name for tool in registry.list_tools() ]
+            state.available_tools = [
+                tool.name
+                for tool in registry.list_tools()
+            ]
 
-            document_pipeline = DocumentProcessingPipeline(indexer=indexer,store=store,state=state)
+            # ---------- Pipelines ----------
+            document_pipeline = DocumentProcessingPipeline(
+                indexer=indexer,
+                store=store,
+                state=state
+            )
+
+            document_manager = DocumentManager(
+                document_pipeline,
+                state
+            )
 
             chat_pipeline = ChatPipeline(
                 llm=llm
@@ -92,46 +101,25 @@ class AgentFactory:
             )
 
             tool_pipeline = ToolPipeline(
-                llm=llm,
-                parser=parser,
                 executor=executor
             )
 
-            chat_workflow = ChatWorkFlow(chat_pipeline)
-
-            rag_workflow = RAGWorkFlow(rag_pipeline)
-
-            tool_workflow = ToolWorkflow(tool_pipeline)
-
-
-            workflow_registry = WorkFlowRegistry()
-
-            workflow_registry.register(
-                Workflow.CHAT,
-                chat_workflow
+            # ---------- Workflow Registry ----------
+            workflow_registry = WorkflowFactory.create(
+                chat_pipeline=chat_pipeline,
+                rag_pipeline=rag_pipeline,
+                tool_pipeline=tool_pipeline
             )
 
-            workflow_registry.register(
-                Workflow.RAG,
-                rag_workflow
-            )
-
-            workflow_registry.register(
-                Workflow.TOOL,
-                tool_workflow
-            )
-
-            context_builder = ContextBuilder()
-
-            decision_engine = RuleBasedDecisionEngine()
-
+            # ---------- Agent ----------
             return IntelligentAgent(
                 state=state,
-                context_builder=context_builder,
-                decision_engine=decision_engine,
+                context_builder=ContextBuilder(),
+                decision_engine=RuleBasedDecisionEngine(),
                 workflow_registry=workflow_registry,
-                document_processing_pipeline=document_pipeline
+                document_manager=document_manager
             )
 
         except Exception as e:
-            print("ERROR -*-*-*", e)
+            logger.error("Error in agent factory " + str(e))
+            logger.exception(e)

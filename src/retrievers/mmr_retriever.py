@@ -2,6 +2,9 @@ import math
 from src.retrievers.base_retriever import BaseRetriever
 from src.models.retrieval_result import RetrievalResult
 
+from src.logging.logging import get_logger
+
+logger = get_logger(__name__)
 
 class MMRRetriever(BaseRetriever):
 
@@ -12,17 +15,22 @@ class MMRRetriever(BaseRetriever):
 
     def retrieve(self,store,query, top_k):
 
-        question_embedding = self.embedding_generator.generate_embedding(query)
+        try:
+            question_embedding = self.embedding_generator.generate_embedding(query)
 
-        best_chunk_list = []
+            best_chunk_list = []
 
-        for chunk in store.get_chunks():
-            score = self._cosine_similarity(chunk.embedding,question_embedding)
+            for chunk in store.get_chunks():
+                score = self._cosine_similarity(chunk.embedding,question_embedding)
 
-            best_chunk_list.append(RetrievalResult(chunk,score))
-            # best_chunk_list = self._prepare_mmr_chunk_list(best_chunk_list,top_k)
-        
-        return self._prepare_mmr_chunk_list(best_chunk_list, top_k)
+                best_chunk_list.append(RetrievalResult(chunk,score))
+                # best_chunk_list = self._prepare_mmr_chunk_list(best_chunk_list,top_k)
+            
+            return self._prepare_mmr_chunk_list(best_chunk_list, top_k)
+
+        except Exception as e:
+            logger.error("Error in retriving embedding  " + str(e))
+            logger.exception(e)
     
     def _prepare_mmr_chunk_list(self,best_chunk_list,top_k):
 

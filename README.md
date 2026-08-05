@@ -1,158 +1,370 @@
 # AI Agent Framework
 
-> A modular, extensible AI Agent Framework built from scratch using Python, designed with clean architecture principles. The framework supports conversational AI, Retrieval-Augmented Generation (RAG), tool execution, document processing, and provider-independent LLM integration.
+> A modular, extensible, provider-independent AI Agent Framework built from scratch in Python using Clean Architecture principles.
 
-> **Current Version:** v0.1.0-alpha
+![Python](https://img.shields.io/badge/Python-3.12-blue)
+![Architecture](https://img.shields.io/badge/Architecture-Clean-green)
+![LLM](https://img.shields.io/badge/LLM-Gemini%20%7C%20Ollama-orange)
+![Status](https://img.shields.io/badge/Version-v0.1.0-success)
 
 ---
 
 # Overview
 
-This project is an attempt to build an AI Agent Framework instead of a single AI application.
+This project is **not an AI application**.
 
-The goal is to separate responsibilities into independent modules so that new workflows, tools, memory systems, retrievers, and LLM providers can be added without modifying the core framework.
+It is an attempt to build a reusable **AI Agent Framework** capable of supporting multiple workflows, multiple LLM providers, document processing, Retrieval-Augmented Generation (RAG), deterministic tool execution, and future Agentic AI capabilities.
 
-Current capabilities include:
+The framework has been designed from the ground up using **Object-Oriented Design**, **Factory Pattern**, **Strategy Pattern**, and **Separation of Concerns**, making every major component replaceable without affecting the rest of the system.
 
-- Multi-workflow agent orchestration
-- Conversation workflow
-- Retrieval-Augmented Generation (RAG)
-- Tool execution
-- Document indexing
-- Semantic retrieval using MMR
-- Conversation memory
-- Gemini LLM integration
-- Provider-independent LLM abstraction
+Unlike many AI projects that tightly couple business logic with LLM calls, this framework delegates orchestration to the framework itself while keeping LLMs as interchangeable reasoning engines.
 
 ---
 
-# Architecture
+# Current Features
+
+## Agent Framework
+
+- Modular Intelligent Agent
+- Shared Agent State
+- Context Builder
+- Rule-Based Decision Engine
+- Workflow Registry
+- Chat Workflow
+- RAG Workflow
+- Tool Workflow
+
+---
+
+## Document Intelligence
+
+- PDF Reader
+- Document Analyzer
+- Document Processing Pipeline
+- Document Manager
+- Sentence Chunking
+- Document Indexing
+- Embedding Generation
+- In-Memory Document Store
+
+---
+
+## Retrieval
+
+- Semantic Retrieval
+- Maximum Marginal Relevance (MMR)
+- Configurable Retriever Factory
+- Re-ranking Pipeline
+
+---
+
+## Prompt System
+
+- Prompt Context
+- Prompt Factory
+- Chat Prompt Builder
+- RAG Prompt Builder
+- Tool Prompt Builder
+- Workflow-specific Prompt Templates
+
+---
+
+## LLM Layer
+
+- Generic LLM Interface
+- Gemini Integration
+- Ollama Integration
+- Common LLM Response Model
+- Token Usage Tracking
+
+---
+
+## Tool Framework
+
+- Tool Registry
+- Tool Executor
+- Calculator Tool
+- Deterministic Tool Routing
+
+---
+
+## Memory
+
+- Conversation Memory
+- Memory Manager
+- Recent Conversation Context
+
+---
+
+## Infrastructure
+
+- Centralized Configuration
+- Factory-Based Dependency Injection
+- Logging
+- Exception Handling
+- Provider Independence
+
+---
+
+# High Level Architecture
 
 ```text
-                                IntelligentAgent
-                                       │
-                        ┌──────────────┴──────────────┐
-                        │                             │
-                process_document()                 run()
-                        │                             │
-                        ▼                             ▼
-        DocumentProcessingPipeline            ContextBuilder
-                        │                             │
-                        ▼                             ▼
-                  Document Store               Decision Engine
-                                                      │
-                                                      ▼
-                                              Workflow Registry
-                                                      │
-                 ┌────────────────────────────────────┼────────────────────────────────────┐
-                 ▼                                    ▼                                    ▼
-           Chat Workflow                        RAG Workflow                         Tool Workflow
-                 │                                    │                                    │
-                 ▼                                    ▼                                    ▼
-          Chat Pipeline                       RAG Pipeline                        Tool Pipeline
-                 │                                    │                                    │
-                 ▼                                    ▼                                    ▼
-             Gemini LLM                 Retriever → Prompt Builder                Tool Executor
-                 │                                    │                                    │
-                 ▼                                    ▼                                    ▼
-          LLM Response                         Gemini LLM                         Calculator Tool
+                               User
+                                │
+                                ▼
+                       IntelligentAgent
+                                │
+      ┌─────────────────────────┼──────────────────────────┐
+      │                         │                          │
+      ▼                         ▼                          ▼
+Document Manager         Context Builder             Agent State
+      │                         │                          │
+      ▼                         ▼                          │
+Document Pipeline       Decision Engine                   │
+      │                         │                          │
+      ▼                         ▼                          │
+Document Store         Workflow Registry ◄─────────────────┘
+                                │
+         ┌──────────────────────┼────────────────────────┐
+         ▼                      ▼                        ▼
+    Chat Workflow          RAG Workflow            Tool Workflow
+         │                      │                        │
+         ▼                      ▼                        ▼
+   Chat Pipeline          RAG Pipeline           Tool Pipeline
+         │                      │                        │
+         ▼                      ▼                        ▼
+      Prompt              Prompt Builder          Tool Executor
+         │                      │                        │
+         ▼                      ▼                        ▼
+                    Gemini / Ollama / Future Providers
 ```
+
+---
+
+# Design Philosophy
+
+The framework follows a few fundamental principles.
+
+## 1. Separation of Concerns
+
+Every component has exactly one responsibility.
+
+Examples:
+
+- Retriever retrieves.
+- Prompt Builder builds prompts.
+- LLM generates responses.
+- Decision Engine selects workflows.
+- IntelligentAgent orchestrates everything.
+
+---
+
+## 2. Replaceability
+
+Every major component can be replaced independently.
+
+Examples:
+
+- Gemini → OpenAI
+- MMR Retriever → Hybrid Retriever
+- InMemory Store → ChromaDB
+- Rule-Based Decision Engine → LLM Decision Engine
+
+No other component should require modification.
+
+---
+
+## 3. Extensibility
+
+The framework is designed to support future additions such as:
+
+- New workflows
+- New retrievers
+- New rerankers
+- New memory systems
+- New tools
+- New document stores
+- New LLM providers
+
+without modifying existing implementations.
+
+---
+
+## 4. Provider Independence
+
+The framework never directly depends on Gemini or Ollama.
+
+Instead it communicates through abstract interfaces.
+
+This allows future integration with:
+
+- OpenAI
+- Anthropic
+- Groq
+- HuggingFace
+- Local GGUF models
+- Any OpenAI-compatible API
+
+with minimal changes.
 
 ---
 
 # Project Structure
 
 ```text
-src/
+AI-Agent-Framework/
 
+├── src/
+│
 ├── agent/
 │   ├── intelligent_agent.py
-│   ├── context.py
-│   ├── context_builder.py
+│   ├── base_agent.py
 │   └── state.py
 │
-├── decision/
-│   ├── decision.py
-│   ├── workflow.py
-│   └── rule_based_decision_engine.py
+├── analyzers/
 │
-├── workflows/
-│   ├── chat_workflow.py
-│   ├── rag_workflow.py
-│   ├── tool_workflow.py
-│   └── workflow_registry.py
+├── chunkers/
 │
-├── pipelines/
-│   ├── chat_pipeline.py
-│   ├── rag_pipeline.py
-│   ├── tool_pipeline.py
-│   └── document_processing_pipeline.py
+├── classifiers/
 │
-├── prompts/
+├── cleaners/
 │
-├── retrievers/
-│   └── mmr_retriever.py
+├── config/
 │
-├── store/
-│   └── in_memory_store.py
+├── context/
+│   ├── context.py
+│   └── context_builder.py
 │
-├── memory/
-│
-├── tools/
-│   ├── calculator_tool.py
-│   ├── tool_executor.py
-│   └── tool_registry.py
-│
-├── llm/
-│   ├── gemini_client.py
-│   ├── llm_response.py
-│   └── token_usage.py
+├── document/
+│   └── document_manager.py
 │
 ├── embeddings/
 │
+├── factories/
+│   ├── agent_factory.py
+│   ├── llm_factory.py
+│   ├── memory_factory.py
+│   ├── processing_factory.py
+│   ├── retriever_factory.py
+│   ├── store_factory.py
+│   ├── tool_factory.py
+│   └── workflow_factory.py
+│
+├── indexing/
+│
+├── llm/
+│
+├── logging/
+│
+├── memory/
+│
+├── memory_managers/
+│
 ├── models/
 │
-└── factory/
-    └── agent_factory.py
+├── orchestration/
+│
+├── pipeline/
+│
+├── prompt/
+│
+├── prompts/
+│
+├── readers/
+│
+├── rerankers/
+│
+├── retrievers/
+│
+├── store/
+│
+├── tools/
+│
+├── workflows/
+│
+└── main.py
 ```
 
 ---
 
-# Core Components
+# Intelligent Agent
 
-## Intelligent Agent
+The **IntelligentAgent** is the entry point of the framework.
 
-The `IntelligentAgent` is the entry point of the framework.
+It acts as the orchestrator responsible for coordinating every component while avoiding business logic itself.
 
-Responsibilities:
+Its responsibilities include:
 
 - Accept user queries
-- Process uploaded documents
+- Manage uploaded documents
 - Build execution context
 - Invoke the Decision Engine
-- Execute the appropriate workflow
+- Select the correct workflow
+- Execute the workflow
 - Return the final response
+
+The agent itself never knows how retrieval, prompting, or LLM inference works.
 
 ---
 
-## Agent State
+# Agent Lifecycle
 
-The framework maintains a shared state object across all components.
+Every request follows the same execution pipeline.
 
-Current state contains:
+```text
+User Question
+      │
+      ▼
+Context Builder
+      │
+      ▼
+Decision Engine
+      │
+      ▼
+Workflow Registry
+      │
+      ▼
+Selected Workflow
+      │
+      ▼
+Pipeline
+      │
+      ▼
+LLM / Tool
+      │
+      ▼
+Response
+```
+
+Because every request passes through this pipeline, adding new workflows requires no changes inside the agent.
+
+---
+
+# Agent State
+
+The framework maintains a shared **AgentState** object that is accessible throughout the application.
+
+Current state stores:
 
 - Active uploaded documents
 - Conversation history
 - Available tools
-- Metadata
+- Runtime metadata
 
-This shared state allows different workflows to collaborate without tight coupling.
+The AgentState enables components to communicate without being tightly coupled.
+
+For example:
+
+- Context Builder reads the current state.
+- Document Manager updates active documents.
+- Decision Engine checks whether documents are available.
+- Future planners and agents will share the same state.
 
 ---
 
-## Context Builder
+# Context Builder
 
-The Context Builder converts the current Agent State into a lightweight execution context.
+The Context Builder transforms the AgentState into a lightweight execution context.
 
 Example:
 
@@ -161,163 +373,503 @@ Context
 
 ├── has_active_document
 ├── has_history
-├── available_tools
-└── current_question
+├── tools_available
+└── question
 ```
 
-This context is used by the Decision Engine to determine which workflow should execute.
+The Context object intentionally contains only the information required by the Decision Engine.
+
+This avoids exposing the complete AgentState to every component.
 
 ---
 
-## Decision Engine
+# Decision Engine
 
-The Decision Engine is responsible for routing user requests.
+The Decision Engine determines which workflow should execute.
 
 Current supported workflows:
 
 - Chat
-- Retrieval-Augmented Generation (RAG)
+- Retrieval-Augmented Generation
 - Tool Execution
 
 Example:
 
-```text
+```
 User:
 2 * 3 / 4
 
 ↓
 
-Decision
-
-workflow = TOOL
-tool = calculator
+Workflow = TOOL
+Tool = Calculator
 ```
+
+If a document is available and the question is document-related, the RAG workflow is selected.
+
+Otherwise:
+
+- Mathematical expressions → Tool Workflow
+- General conversation → Chat Workflow
+
+The routing logic is deterministic and controlled entirely by the framework.
 
 ---
 
-## Workflow Registry
+# Workflow Registry
 
-The Workflow Registry maps workflow types to workflow implementations.
+The Workflow Registry maps workflow identifiers to their implementations.
 
 ```text
-CHAT  → ChatWorkflow
-RAG   → RAGWorkflow
-TOOL  → ToolWorkflow
+CHAT
+    │
+    ▼
+ChatWorkflow
+
+RAG
+    │
+    ▼
+RAGWorkflow
+
+TOOL
+    │
+    ▼
+ToolWorkflow
 ```
 
-This design allows adding new workflows without modifying the agent.
+Adding a new workflow only requires:
+
+- Creating the workflow
+- Registering it
+
+The IntelligentAgent never changes.
 
 ---
 
-# Document Processing
+# Factory Architecture
 
-Uploaded documents pass through the following pipeline:
+The framework makes heavy use of the Factory Pattern to isolate object creation.
 
-```text
-Document
-    ↓
-Reader
-    ↓
-Analyzer
-    ↓
-Chunker
-    ↓
-Embedding Generator
-    ↓
-Indexer
-    ↓
-Document Store
-    ↓
-Agent State
-```
+Current factories include:
 
-Indexed documents become immediately available for semantic search.
+## AgentFactory
+
+Responsible for assembling the complete framework.
+
+It creates:
+
+- LLM
+- Retriever
+- Memory
+- Pipelines
+- Workflows
+- State
+- IntelligentAgent
 
 ---
 
-# Retrieval-Augmented Generation (RAG)
+## LLMFactory
 
-Current retrieval flow:
+Creates the configured LLM provider.
 
-```text
-User Question
-      ↓
-Embedding Generation
-      ↓
-MMR Retriever
-      ↓
-Top Relevant Chunks
-      ↓
-Prompt Builder
-      ↓
-Gemini
-      ↓
-Answer
-```
+Current providers:
 
-The framework uses **Maximum Marginal Relevance (MMR)** to retrieve relevant and diverse document chunks.
+- Gemini
+- Ollama
+
+Future providers:
+
+- OpenAI
+- Anthropic
+- Groq
+- HuggingFace
 
 ---
 
-# Conversation Memory
+## ProcessingFactory
 
-Conversation history is maintained independently from document retrieval.
+Responsible for document processing components.
 
-The current implementation supports:
+Creates:
 
-- Multi-turn conversations
-- Previous question context
-- Previous assistant responses
-
-Memory is automatically included in prompts.
+- Cleaner
+- Chunker
+- Embedding Generator
+- Document Indexer
+- Reranker
 
 ---
 
-# Tool Execution
+## RetrieverFactory
 
-Unlike many agent implementations, tool routing is handled by the framework instead of the LLM.
+Creates the configured retriever.
 
-Current flow:
+Current implementations:
 
-```text
-User
- ↓
-Decision Engine
- ↓
-Tool Workflow
- ↓
-Tool Pipeline
- ↓
-Tool Executor
- ↓
-Calculator Tool
-```
+- Semantic Retriever
+- Maximum Marginal Relevance Retriever
 
-This avoids unnecessary LLM calls for deterministic tool execution.
+Future implementations:
 
-Current tool:
+- Hybrid Retriever
+- Metadata Retriever
+- Parent-Child Retriever
+
+---
+
+## StoreFactory
+
+Creates the configured document store.
+
+Current:
+
+- InMemoryDocumentStore
+
+Future:
+
+- ChromaDB
+- Pinecone
+- Weaviate
+- Qdrant
+
+---
+
+## MemoryFactory
+
+Creates:
+
+- Conversation Memory
+- Memory Manager
+
+Future memory systems can be introduced without modifying pipelines.
+
+---
+
+## ToolFactory
+
+Creates:
+
+- Tool Registry
+- Tool Executor
+
+Current Tool:
 
 - Calculator
 
-The architecture supports adding additional tools such as:
+Future tools:
 
 - Weather
-- SQL
 - Search
-- File Operations
+- SQL
+- File System
 - Web APIs
-
-without changing the orchestration layer.
 
 ---
 
-# LLM Abstraction
+## WorkflowFactory
+
+Registers every workflow inside the Workflow Registry.
+
+Current workflows:
+
+- Chat
+- RAG
+- Tool
+
+Future workflows may include:
+
+- Planner Workflow
+- Reflection Workflow
+- Multi-Agent Workflow
+- MCP Workflow
+
+The IntelligentAgent never needs to know how workflows are created.
+
+# Document Processing
+
+The framework separates document lifecycle management from document processing.
+
+The **DocumentManager** is responsible for managing uploaded documents, while the **DocumentProcessingPipeline** is responsible for transforming raw documents into searchable knowledge.
+
+## Document Lifecycle
+
+```
+Upload PDF
+      │
+      ▼
+Document Manager
+      │
+      ▼
+Document Processing Pipeline
+      │
+      ▼
+Indexed Document
+      │
+      ▼
+Document Store
+      │
+      ▼
+Agent State Updated
+```
+
+Current responsibilities of the Document Manager:
+
+- Upload documents
+- Process documents
+- Remove documents
+- List active documents
+- Clear uploaded documents
+- Maintain active document state
+
+This separation ensures that document management logic remains independent of document indexing.
+
+---
+
+# Document Processing Pipeline
+
+Every uploaded document passes through the following stages.
+
+```
+PDF Reader
+      │
+      ▼
+Document Analyzer
+      │
+      ▼
+Text Cleaner
+      │
+      ▼
+Sentence Chunker
+      │
+      ▼
+Embedding Generator
+      │
+      ▼
+Document Indexer
+      │
+      ▼
+Document Store
+```
+
+Each stage has a single responsibility.
+
+### Reader
+
+Reads the uploaded document.
+
+Current implementation:
+
+- PDF Reader
+
+Future:
+
+- DOCX Reader
+- TXT Reader
+- HTML Reader
+- Markdown Reader
+
+---
+
+### Analyzer
+
+Extracts useful information from raw pages.
+
+Examples:
+
+- Page text
+- Metadata
+- Language
+- Summary
+
+---
+
+### Cleaner
+
+Normalizes document text before chunking.
+
+Examples:
+
+- Remove unnecessary whitespace
+- Normalize line breaks
+- Remove invalid characters
+
+---
+
+### Chunker
+
+Splits large documents into semantically meaningful chunks.
+
+Current implementation:
+
+- Sentence Chunking
+
+Future implementations:
+
+- Recursive Chunking
+- Semantic Chunking
+- Token Chunking
+- Sliding Window Chunking
+
+---
+
+### Embedding Generator
+
+Converts every chunk into vector embeddings.
+
+The framework treats embedding generation as an independent component, allowing future replacement without affecting retrieval.
+
+---
+
+### Document Indexer
+
+Coordinates the complete indexing process.
+
+Responsibilities:
+
+- Clean document
+- Chunk document
+- Generate embeddings
+- Produce indexed document
+
+---
+
+# Document Store
+
+The framework stores indexed documents inside a document store.
+
+Current implementation:
+
+```
+InMemoryDocumentStore
+```
+
+Responsibilities:
+
+- Store indexed documents
+- Provide searchable document collection
+- Support retrieval
+
+Future implementations:
+
+- ChromaDB
+- Pinecone
+- Weaviate
+- Qdrant
+
+---
+
+# Retrieval Pipeline
+
+Current retrieval flow:
+
+```
+User Question
+       │
+       ▼
+Embedding Generation
+       │
+       ▼
+Retriever
+       │
+       ▼
+Relevant Chunks
+       │
+       ▼
+Reranker
+       │
+       ▼
+Top Chunks
+```
+
+The retriever is completely independent from the document store implementation.
+
+Current retrievers:
+
+- Semantic Retriever
+- Maximum Marginal Relevance (MMR)
+
+Future retrievers:
+
+- Hybrid Retrieval
+- Metadata Retrieval
+- Parent-Child Retrieval
+
+---
+
+# Prompt System
+
+The prompt system is fully modular.
+
+Instead of a single PromptBuilder, every workflow owns its own prompt builder.
+
+```
+PromptFactory
+        │
+        ├──────────────┐
+        │              │
+        ▼              ▼
+ChatPrompt      RAGPrompt
+        │              │
+        ▼              ▼
+Prompt Builder  Prompt Builder
+```
+
+This allows every workflow to construct prompts independently.
+
+Current prompt builders:
+
+- Chat Prompt Builder
+- RAG Prompt Builder
+- Tool Prompt Builder
+
+---
+
+# Prompt Context
+
+Every prompt builder receives a common PromptContext object.
+
+Example:
+
+```
+PromptContext
+
+├── question
+├── history
+├── retrieval_results
+├── metadata
+└── extras
+```
+
+This avoids long method signatures and provides a common interface for all prompt builders.
+
+---
+
+# LLM Layer
 
 The framework is provider-independent.
 
-Current implementation uses **Google Gemini**, but all providers return a common response object.
+Every provider returns the same LLMResponse object.
 
-```text
+Current providers:
+
+- Google Gemini
+- Ollama
+
+Future providers:
+
+- OpenAI
+- Anthropic
+- Groq
+- Hugging Face
+- Local GGUF Models
+
+---
+
+# LLM Response
+
+Every provider maps its native response into a common model.
+
+```
 LLMResponse
 
 ├── content
@@ -329,147 +881,518 @@ LLMResponse
 └── created_at
 ```
 
-This allows future integration with:
-
-- OpenAI
-- Anthropic
-- Ollama
-- Hugging Face
-- Groq
-- Local models
-
-without affecting workflows.
+Because workflows depend only on LLMResponse, switching providers requires no workflow changes.
 
 ---
+
+# Memory
+
+Conversation memory is maintained independently from retrieval.
+
+Current implementation:
+
+- Conversation Memory
+- Recent Memory Manager
+
+Responsibilities:
+
+- Store user messages
+- Store assistant responses
+- Build conversational context
+
+Future memory systems:
+
+- Summary Memory
+- Long-Term Memory
+- Vector Memory
+- Episodic Memory
+
+---
+
+# Tool Framework
+
+Unlike many LLM-based agents, tools are selected by the framework rather than by the language model.
+
+Current flow:
+
+```
+User Question
+      │
+      ▼
+Decision Engine
+      │
+      ▼
+Tool Workflow
+      │
+      ▼
+Tool Pipeline
+      │
+      ▼
+Tool Executor
+      │
+      ▼
+Calculator Tool
+```
+
+This avoids unnecessary LLM calls for deterministic operations.
+
+Current tools:
+
+- Calculator
+
+Planned tools:
+
+- Weather
+- SQL
+- Search
+- File System
+- REST APIs
+
+---
+
+# Logging
+
+The framework includes centralized logging.
+
+Logging levels include:
+
+- DEBUG
+- INFO
+- WARNING
+- ERROR
+- CRITICAL
+
+Logs are used throughout the framework instead of print statements.
+
+This simplifies debugging while making the framework suitable for production environments.
+
+---
+
+# Exception Handling
+
+Errors are handled gracefully without terminating the application.
+
+Responsibilities:
+
+- Capture exceptions
+- Log failures
+- Return user-friendly responses
+- Continue execution whenever possible
+
+This allows long-running interactive sessions without crashing due to unexpected failures.
+
+---
+
+# Configuration
+
+The framework uses centralized configuration to avoid hard-coded values.
+
+Current configurable components include:
+
+- LLM Provider
+- Retriever
+- Chunker
+- Cleaner
+- Document Processing
+- Embedding Generation
+
+Future configuration will include:
+
+- Vector Database
+- Memory System
+- Reranker
+- Prompt Templates
+- Logging
+- Observability
 
 # Current Features
 
-- Modular agent architecture
-- Shared agent state
-- Context-based workflow routing
-- Multi-workflow execution
-- Retrieval-Augmented Generation
-- Maximum Marginal Relevance (MMR) retrieval
-- Conversation memory
-- Document indexing
-- In-memory vector store
-- Tool execution framework
-- Calculator tool
-- Gemini integration
-- Generic LLM abstraction
-- Clean separation of responsibilities
+## Core Framework
+
+- Modular Intelligent Agent
+- Shared Agent State
+- Context-Based Decision Making
+- Workflow Registry
+- Rule-Based Decision Engine
+- Factory-Based Dependency Injection
+- Configuration System
+- Centralized Logging
+- Exception Handling
 
 ---
 
-# Current Workflow Routing
+## Document Intelligence
+
+- PDF Reading
+- Document Analysis
+- Document Processing Pipeline
+- Document Manager
+- Sentence Chunking
+- Embedding Generation
+- Document Indexing
+- In-Memory Document Store
+
+---
+
+## Retrieval
+
+- Semantic Retrieval
+- Maximum Marginal Relevance (MMR)
+- Re-ranking
+- Retrieval-Augmented Generation (RAG)
+
+---
+
+## Prompt Framework
+
+- Prompt Factory
+- Prompt Context
+- Chat Prompt Builder
+- RAG Prompt Builder
+- Tool Prompt Builder
+- Workflow-specific Prompt Templates
+
+---
+
+## LLM Layer
+
+- Generic LLM Interface
+- Gemini Integration
+- Ollama Integration
+- Common Response Model
+
+---
+
+## Memory
+
+- Conversation Memory
+- Recent Memory Manager
+
+---
+
+## Tools
+
+- Calculator Tool
+- Tool Registry
+- Tool Executor
+
+---
+
+# Example Usage
+
+## Create Agent
+
+```python
+from src.factories.agent_factory import AgentFactory
+
+agent = AgentFactory.create()
+```
+
+---
+
+## Upload Document
+
+```python
+agent.process_document("artificial_intelligence.pdf")
+```
+
+---
+
+## Ask Questions
+
+```python
+response = agent.run(
+    "What is Artificial Intelligence?"
+)
+
+print(response.content)
+```
+
+---
+
+## Tool Execution
+
+```python
+response = agent.run("25 * 15 + 8")
+```
+
+The Decision Engine automatically routes the request to the Tool Workflow.
+
+---
+
+## Chat
+
+```python
+response = agent.run(
+    "Explain reinforcement learning."
+)
+```
+
+The framework automatically selects the Chat Workflow.
+
+---
+
+# Extending the Framework
+
+One of the primary goals of this project is extensibility.
+
+Adding new capabilities should require minimal changes to existing code.
+
+---
+
+## Add a New LLM
+
+Create a new implementation of the BaseLLM interface.
 
 ```text
-                    User Query
-                         │
-                         ▼
-                 Context Builder
-                         │
-                         ▼
-                 Decision Engine
-                         │
-        ┌────────────────┼────────────────┐
-        ▼                ▼                ▼
-      CHAT             RAG             TOOL
-        │                │                │
-        ▼                ▼                ▼
- Chat Pipeline     RAG Pipeline     Tool Pipeline
+llm/
+
+openai_llm.py
 ```
+
+Register it inside:
+
+```
+LLMFactory
+```
+
+No other component requires modification.
+
+---
+
+## Add a New Retriever
+
+Implement a new retriever.
+
+Example:
+
+```
+HybridRetriever
+```
+
+Register it inside:
+
+```
+RetrieverFactory
+```
+
+---
+
+## Add a New Tool
+
+Create a new Tool.
+
+Example:
+
+```
+WeatherTool
+```
+
+Register it inside:
+
+```
+ToolFactory
+```
+
+The Decision Engine can then route requests automatically.
+
+---
+
+## Add a New Workflow
+
+Implement:
+
+```
+PlannerWorkflow
+```
+
+Register it inside:
+
+```
+WorkflowFactory
+```
+
+The IntelligentAgent remains unchanged.
+
+---
+
+# Roadmap
+
+## Version 0.2
+
+### Persistent Retrieval
+
+- ChromaDB Integration
+- Metadata-aware Retrieval
+- Hybrid Retrieval
+- Multi-document Retrieval
+- Persistent Embeddings
+
+---
+
+## Version 0.3
+
+### Agentic AI
+
+- Planner Workflow
+- Reflection Workflow
+- Multi-step Reasoning
+- Task Decomposition
+- Native Gemini Function Calling
+
+---
+
+## Version 0.4
+
+### Advanced Memory
+
+- Summary Memory
+- Long-Term Memory
+- Episodic Memory
+- Vector Memory
+
+---
+
+## Version 0.5
+
+### Enterprise Features
+
+- Observability
+- Tracing
+- Metrics
+- Streaming Responses
+- Authentication
+
+---
+
+## Version 1.0
+
+### AI Agent Platform
+
+- Multi-Agent Collaboration
+- Model Context Protocol (MCP)
+- Plugin System
+- REST API
+- Docker Deployment
+- Kubernetes Deployment
+- Cloud Vector Databases
+- Production Monitoring
 
 ---
 
 # Technologies
 
-- Python
+- Python 3.12
 - Google Gemini API
+- Ollama
 - NumPy
-- Object-Oriented Programming (OOP)
+- Object-Oriented Programming
 - Clean Architecture
 - Retrieval-Augmented Generation (RAG)
 - Maximum Marginal Relevance (MMR)
 
----
+Future:
 
-# Current Status
-
-## ✅ Completed
-
-- Modular agent architecture
-- Shared Agent State
-- Workflow Registry
-- Rule-Based Decision Engine
-- Chat Workflow
-- RAG Workflow
-- Tool Workflow
-- Document Processing Pipeline
-- MMR Retriever
-- In-Memory Vector Store
-- Conversation Memory
-- Gemini Integration
-- Generic LLM Response Abstraction
-
----
-
-## 🚧 In Progress
-
-- Prompt Builder module
-- Memory optimization
-- Metadata-aware retrieval
-- Duplicate chunk filtering
-
----
-
-## 📌 Planned
-
-- Streaming responses
-- Multiple document support
-- Hybrid Retrieval (Vector + BM25)
-- Native Gemini Function Calling
-- MCP (Model Context Protocol)
-- Multi-Agent Collaboration
-- Planner / Executor Architecture
-- Web Search Tool
-- SQL Tool
-- File System Tool
-- Local LLM Support (Ollama, GGUF)
-- Observability & Tracing
-- REST API
-- Docker Deployment
+- ChromaDB
+- FastAPI
+- BM25
+- Docker
+- Redis
+- PostgreSQL
 
 ---
 
 # Design Principles
 
-This framework is designed around the following principles:
+The framework is built around the following principles.
 
-- **Modularity** – Components can be replaced independently.
-- **Extensibility** – New workflows, tools, retrievers, and LLM providers can be added easily.
-- **Separation of Concerns** – Each module has a single responsibility.
-- **Provider Independence** – The framework is not tied to any specific LLM.
-- **Deterministic Orchestration** – Workflow and tool routing are controlled by the framework rather than delegated to the LLM.
+### Modularity
+
+Every component should have a single responsibility.
+
+---
+
+### Extensibility
+
+Adding new functionality should not require modifying existing modules.
+
+---
+
+### Replaceability
+
+Components such as LLMs, Retrievers, Memory Systems, Stores, and Workflows should be interchangeable.
+
+---
+
+### Provider Independence
+
+The framework should not depend on any specific AI provider.
+
+---
+
+### Clean Architecture
+
+Business logic remains independent of frameworks and third-party libraries.
+
+---
+
+### Deterministic Orchestration
+
+Workflow selection and tool routing are handled by the framework rather than delegated to the language model.
 
 ---
 
 # Future Vision
 
-The long-term goal is to evolve this project into a production-ready AI Agent Framework supporting:
+The long-term goal of this project is to evolve from a modular RAG framework into a production-ready AI Agent Platform.
+
+Future capabilities include:
 
 - Autonomous Agents
 - Multi-Agent Collaboration
 - Model Context Protocol (MCP)
-- Pluggable Memory Systems
-- Enterprise-Grade Retrieval
-- Local and Cloud LLMs
-- Advanced Tool Orchestration
-- Agent Observability
-- Scalable Deployment
+- Enterprise Retrieval
+- Local & Cloud LLM Support
+- Persistent Memory
+- Hybrid Search
+- Plugin Ecosystem
+- Observability & Tracing
+- Cloud Deployment
+- API Gateway
+- Production Monitoring
+
+The architecture has been intentionally designed so these capabilities can be introduced incrementally without requiring large-scale refactoring.
+
+---
+
+# Contributing
+
+Contributions, suggestions, and discussions are welcome.
+
+If you would like to contribute:
+
+1. Fork the repository
+2. Create a feature branch
+3. Implement your changes
+4. Add tests where applicable
+5. Submit a Pull Request
+
+Constructive feedback and architectural discussions are encouraged.
 
 ---
 
 # License
 
-This project is being developed for educational, research, and learning purposes. Contributions, ideas, and feedback are welcome.
+This project is currently developed for educational, research, and learning purposes.
+
+Feel free to explore the code, learn from it, and build upon the ideas presented here.
+
+---
+
+# Author
+
+**VJ S**
+
+Building an AI Agent Framework from scratch to understand the internals of modern AI systems instead of relying solely on existing frameworks.
+
+⭐ If you find this project interesting, consider giving it a star and following its progress as new capabilities are added.

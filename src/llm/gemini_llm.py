@@ -3,6 +3,7 @@ from google import genai
 from src.llm.base_llm import BaseLLM
 from src.models.llm_response import LLMResponse
 from src.models.token_usage import TokenUsage
+from src.config.settings import settings
 
 
 class GeminiLLM(BaseLLM):
@@ -10,15 +11,13 @@ class GeminiLLM(BaseLLM):
     def __init__(
         self,
         api_key: str,
-        model: str = "gemini-3.6-flash"
     ):
         self.client = genai.Client(api_key=api_key)
-        self.model = model
 
     def generate(self, prompt: str) -> LLMResponse:
 
         interaction = self.client.interactions.create(
-            model=self.model,
+            model=settings.llm.model,
             input=prompt
         )
 

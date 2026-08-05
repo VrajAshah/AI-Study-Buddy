@@ -2,6 +2,10 @@ from src.readers.pdf_reader import PDFReader
 from src.models.document import Document
 from src.analyzers.document_analyzer import DocumentAnalyzer
 
+from src.logging.logging import get_logger
+
+logger = get_logger(__name__)
+
 class DocumentProcessingPipeline:
 
     def __init__(self, indexer, store, state):
@@ -11,18 +15,26 @@ class DocumentProcessingPipeline:
 
     def process(self, document_name):
 
-        reader = PDFReader(document_name)
-        pages = reader.get_pages()
+        try:
 
-        analyzer = DocumentAnalyzer(pages)
-        analyzed_pages = analyzer.analyze()
+            logger.info("Indexing started")
+            reader = PDFReader(document_name)
+            pages = reader.get_pages()
 
-        document = Document(analyzed_pages, document_name)
+            analyzer = DocumentAnalyzer(pages)
+            analyzed_pages = analyzer.analyze()
 
-        indexed_document = self.indexer.index(document)
+            document = Document(analyzed_pages, document_name)
 
-        self.store.add_document(indexed_document)
+            indexed_document = self.indexer.index(document)
+            logger.info("Indexing Completed")
 
-        self.state.add_document(document_name)
+            self.store.add_document(indexed_document)
 
-        return indexed_document
+            self.state.add_document(document_name)
+
+            return indexed_document
+        
+        except Exception as e:
+            logger.error("Error in indexing document " + str(e))
+            logger.exception(e)

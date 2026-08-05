@@ -4,6 +4,10 @@ from src.orchestration.base_decision_engine import BaseDecisionEngine
 from src.orchestration.workflow_registry import WorkFlowRegistry
 from src.agent.state import AgentState
 
+from src.logging.logging import get_logger
+
+logger = get_logger(__name__)
+
 class IntelligentAgent(BaseAgent):
 
     def __init__(
@@ -12,27 +16,33 @@ class IntelligentAgent(BaseAgent):
                     context_builder: ContextBuilder, 
                     decision_engine: BaseDecisionEngine, 
                     workflow_registry: WorkFlowRegistry,
-                    document_processing_pipeline
+                    document_manager
                 ):
 
         self.state = state
         self.context_builder = context_builder
         self.decision_engine = decision_engine
         self.workflow_registry = workflow_registry
-        self.document_processing_pipeline = document_processing_pipeline
+        self.document_manager = document_manager
 
     def run(self, question):
 
-        context = self.context_builder.build(question, self.state)
+        try:
 
-        decision = self.decision_engine.decide(context)
+            context = self.context_builder.build(question, self.state)
 
-        workflow = self.workflow_registry.get(decision.workflow)
+            decision = self.decision_engine.decide(context)
 
-        response = workflow.execute(context, decision)
+            workflow = self.workflow_registry.get(decision.workflow)
 
-        return response
+            response = workflow.execute(context, decision)
+
+            return response
+
+        except Exception as e:
+            logger.error("Error in intelligent agent " + str(e))
+            logger.exception(e)
 
     def process_document(self, document):
 
-        return self.document_processing_pipeline.process(document)
+        return self.document_manager.process_document(document)
